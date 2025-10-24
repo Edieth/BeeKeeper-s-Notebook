@@ -1,0 +1,4 @@
+package Entity
+
+class Inventory {
+}
