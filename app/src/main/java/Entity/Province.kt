@@ -19,7 +19,5 @@ class Province {
         get() = this.states
         set(value) { this.states = value }
 
-    override fun toString(): String {
-        return "Provincia: $name, Cantones: ${states.joinToString(", ")}"
-    }
+
 }
