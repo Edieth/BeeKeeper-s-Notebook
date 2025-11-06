@@ -22,16 +22,16 @@ class BeehiveController {
         }
     }
 
-    fun updatePerson(beehive: Beehive){
+    fun updateBeehive(beehive: Beehive){
         try {
-            dataManager.update(Beehive)
+            dataManager.update(beehive)
         }catch (e: Exception){
             throw Exception(context
                 .getString(R.string.ErrorMsgUpdate))
         }
     }
 
-    fun getPeople(): List<Beehive>{
+    fun getBeehive(): List<Beehive>{
         try {
             return dataManager.getAll()
         }catch (e: Exception){
@@ -40,7 +40,7 @@ class BeehiveController {
         }
     }
 
-    fun getById(id: String): Beehive{
+    fun getById(id: String): Beehive?{
         try {
             val result = dataManager.getById(id)
             if (result == null){
@@ -54,9 +54,9 @@ class BeehiveController {
         }
     }
 
-    fun getByFullName(id: String): Beehive{
+    fun getFullInfoBehive(id: String): Beehive{
         try {
-            val result = dataManager.getByFullName(id)
+            val result = dataManager.FullInfoBehive(id)
             if (result == null){
                 throw Exception(context
                     .getString(R.string.ErrorMsgGetById))
@@ -66,6 +66,18 @@ class BeehiveController {
             throw Exception(context
                 .getString(R.string.ErrorMsgGetById))
         }
+        fun removeBeehive(id: String){
+            try{
+                val result = dataManager.getById(id)
+                if (result == null){
+                    throw Exception(context
+                        .getString(R.string.MsgDataNoFound))
+                }
+                dataManager.remove(id)
+            }catch (e: Exception){
+                throw Exception(context
+                    .getString(R.string.ErrorMsgRemove))
+            }
     }
-
+    }
 }

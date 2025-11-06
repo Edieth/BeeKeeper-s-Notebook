@@ -1,4 +1,0 @@
-package Entity
-
-class Inventory {
-}

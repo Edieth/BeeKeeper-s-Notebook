@@ -5,4 +5,5 @@
     <string name="ErrorMsgRemove">Error al eliminar el dato</string>
     <string name="ErrorMsgGetAll">Error al obtener la lista de datos.</string>
     <string name="ErrorMsgGetById">Error al obtener el dato especifico</string>
+    <string name="MsgDataNotFound">El dato no fue encontrado</string>
 </resources>

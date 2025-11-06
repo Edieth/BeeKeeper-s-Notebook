@@ -3,8 +3,8 @@ package Data
 import Entity.Beehive
 
 interface IDataManager {
-    fun add(person: Beehive)
-    fun update(person: Beehive)
+    fun add(behive: Beehive)
+    fun update(behive: Beehive)
     fun remove(id: String)
     fun getAll(): List<Beehive>
     fun getById(id: String): Beehive?
