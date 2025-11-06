@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">BeeKeepers Notebook</string>
+    <string name="ErrorMsgAdd">Error when adding the data.</string>
+    <string name="ErrorMsgUpdate">Error ehen updating the data.</string>
+    <string name="ErrorMsgRemove">Error when removing the data.</string>
+    <string name="ErrorMsgGetAll">Error when getting all data.</string>
+    <string name="ErrorMsgGetById">Error when trying to get the specific data</string>
+    <string name="MsgDataNotFound">The data was not found.</string>
+</resources>
