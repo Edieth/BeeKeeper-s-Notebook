@@ -12,13 +12,7 @@ class HarvestRecord {
 
     constructor()
 
-    constructor(
-        id: String,
-        date: LocalDate,
-        beehiveId: String,
-        honeyFrames: Int,
-        honeyAmountKg: Double
-    ) {
+    constructor(id: String, date: LocalDate, beehiveId: String, honeyFrames: Int, honeyAmountKg: Double) {
         this.id = id
         this.date = date
         this.beehiveId = beehiveId

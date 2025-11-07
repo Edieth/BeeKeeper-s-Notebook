@@ -1,14 +1,17 @@
 package Entity
+import Entity.Person
 
 class Zone {
     private var id: String = ""
     private var name: String = ""
     private var beehiveIds: MutableList<String> = mutableListOf()
+    private lateinit var personID: Person
 
     constructor()
-    constructor(id: String, name: String) {
+    constructor(id: String, name: String, personID: String) {
         this.id = id
         this.name = name
+
     }
 
     var ID: String

@@ -1,8 +1,20 @@
 package Controller
+import android.content.Context
+import Data.IDataManager
+import Data.MemoryDataManager
+import Entity.InventoryItem
+import java.lang.Exception
+import cr.ac.utn.beekeepersnotebook.R
+
+
 
 class InventoryController {
     private var dataManager: IDataManager = MemoryDataManager
+    private  var context: Context
 
+    constructor(context: Context){
+        this.context=context
+    }
     fun addItem(item: InventoryItem) {
         try {
             dataManager.add(item)

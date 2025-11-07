@@ -27,6 +27,5 @@ class Queen {
         get() = this.entryDate
         set(value) { this.entryDate = value }
 
-    fun FullInfoQueen(): String =
-        "$this.type $this.entryDate"
+    fun FullInfoQueen(): String = "$this.type $this.entryDate"
 }

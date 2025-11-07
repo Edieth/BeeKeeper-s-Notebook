@@ -2,11 +2,19 @@ package Data
 
 import Entity.Beehive
 
-interface IDataManager {
+interface IDataManager <T> {
     fun add(behive: Beehive)
     fun update(behive: Beehive)
     fun remove(id: String)
-    fun getAll(): List<Beehive>
-    fun getById(id: String): Beehive?
     fun getByFullName(FullInfoBehive: String): Beehive?
+
+    fun insert(item: T): Boolean
+
+    fun update(item: T): Boolean
+
+    fun delete(id: String): Boolean
+
+    fun getById(id: String): T?
+
+    fun getAll(): MutableList<T>
 }

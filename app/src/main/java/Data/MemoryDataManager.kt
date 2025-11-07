@@ -1,7 +1,8 @@
 package Data
 
-import Entity.Beehive
 import java.lang.Exception
+import Entity.Person
+import Entity.Beehive
 import Entity.HarvestRecord
 import Entity.InventoryItem
 import Entity.Queen
@@ -10,29 +11,38 @@ import Data.IDataManager
 
 
 object MemoryDataManager: IDataManager {
-    private var BeehiveList = mutableListOf<Beehive>()
-    private var zones = mutableListOf<Zone>()
-    private var beehives = mutableListOf<Beehive>()
+    private val BeehiveList = mutableListOf<Beehive>()
+    private val zones = mutableListOf<Zone>()
     private val queens = mutableListOf<Queen>()
-    private var inventoryItems = mutableListOf<InventoryItem>()
-    private var harvestRecords = mutableListOf<HarvestRecord>()
+    private val inventoryItems = mutableListOf<InventoryItem>()
+    private val harvestRecords = mutableListOf<HarvestRecord>()
+    private val persons = mutableListOf<Person>()
 
-    override fun add(beehive: Beehive) {
-        BeehiveList.add(beehive)
+    fun addPerson(person: Person): Boolean {
+        if (persons.any { it.Email == person.Email }) return false
+        persons.add(person)
+        return true
+    }
+    fun validateCredentials(email: String, password: String): Person? {
+        return persons.find { it.Email == email && it.Password == password }
     }
 
-    override fun remove(id: String) {
+    fun getBeehivesByZone(zoneId: String): List<Beehive> = BeehiveList.filter { it.ZoneID == zoneId }
+    fun addBeehive(beehive: Beehive) {
+        BeehiveList.add(beehive)
+    }
+    fun removeBeehive(id: String) {
         BeehiveList.removeIf { it.ID.trim()==id.trim() }
     }
 
-    override fun update(beehive: Beehive) {
-        remove(beehive.ID)
-        add(beehive)
+    fun updateBeehive(beehive: Beehive) {
+        removeBeehive(beehive.ID)
+        addBeehive(beehive)
     }
 
-    override fun getAll()= BeehiveList
+    fun getAllBeehives(): List<Beehive> = BeehiveList.toList()
 
-    override fun getById(id: String): Beehive? {
+    fun getBeehiveById(id: String): Beehive? {
         try {
             var result = BeehiveList.
             filter { it.ID.trim() == id.trim() }
@@ -42,7 +52,7 @@ object MemoryDataManager: IDataManager {
         }
     }
 
-    override fun getByFullName(fullInfo: String): Beehive? {
+    fun getByFullName(fullInfo: String): Beehive? {
         try {
             var result = BeehiveList.
             filter { it.FullInfo().trim() == fullInfo.trim() }
@@ -51,33 +61,39 @@ object MemoryDataManager: IDataManager {
             throw e
         }
     }
-
-        fun addZone(zone: Zone) = zones.add(zone)
+        fun addZone(zone: Zone){
+            zones.add(zone)
+        }
         fun updateZone(zone: Zone) {
             removeZone(zone.ID)
             addZone(zone)
         }
-        fun removeZone(id: String) { zones.removeIf { it.ID == id } }
-        fun getZoneById(id: String): Zone? = zones.firstOrNull { it.ID == id }
+        fun removeZone(id: String) {
+            zones.removeIf { it.ID.trim() == id.trim() }
+        }
+        fun getZoneById(id: String): Zone? {
+            val result = zones.filter { it.ID.trim() == id.trim() }
+            return if (result.any()) result[0] else null
+        }
         fun getAllZones(): List<Zone> = zones.toList()
 
-        fun addBeehive(beehive: Beehive) = beehives.add(beehive)
-        fun updateBeehive(beehive: Beehive) {
-            removeBeehive(beehive.ID)
-            addBeehive(beehive)
+        fun addQueen(queen: Queen)  {
+            queens.add(queen)
         }
-        fun removeBeehive(id: String) { beehives.removeIf { it.ID == id } }
-        fun getBeehiveById(id: String): Beehive? = beehives.firstOrNull { it.ID == id }
-        fun getAllBeehives(): List<Beehive> = beehives.toList()
-        fun getBeehivesByZone(zoneId: String): List<Beehive> = beehives.filter { it.ZoneID == zoneId }
 
-        fun addQueen(queen: Queen) = queens.add(queen)
         fun updateQueen(queen: Queen) {
             removeQueen(queen.ID)
             addQueen(queen)
         }
-        fun removeQueen(id: String) { queens.removeIf { it.ID == id } }
-        fun getQueenById(id: String): Queen? = queens.firstOrNull { it.ID == id }
+        fun removeQueen(id: String) {
+            queens.removeIf { it.ID.trim() == id.trim() }
+        }
+        fun getQueenById(id: String): Queen? {
+            val result = queens.
+                filter { it.ID.trim() == id.trim() }
+            return if (result.any()) result[0] else null
+        }
+
         fun getAllQueens(): List<Queen> = queens.toList()
 
         fun addInventoryItem(item: InventoryItem) = inventoryItems.add(item)

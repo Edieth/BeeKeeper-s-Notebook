@@ -8,12 +8,8 @@ class Person {
     private var name: String = ""
     private var fLastName: String = ""
     private var sLastName: String = ""
-    private var phone: Int = 0
     private var email: String = ""
-    private lateinit var province: Province
-    private var state: String = ""
-    private var district: String = ""
-    private var address: String = ""
+    private var password: String = ""
 
     constructor()
 
@@ -22,23 +18,15 @@ class Person {
         name: String,
         fLastName: String,
         sLastName: String,
-        phone: Int,
         email: String,
-        province: Province,
-        state: String,
-        district: String,
-        address: String
+        password: String
     ) {
         this.id = id
         this.name = name
         this.fLastName = fLastName
         this.sLastName = sLastName
-        this.phone = phone
         this.email = email
-        this.province = province
-        this.state = state
-        this.district = district
-        this.address = address
+        this.password = password
     }
 
     var ID: String
@@ -57,29 +45,13 @@ class Person {
         get() = this.sLastName
         set(value) { this.sLastName = value }
 
-    var Phone: Int
-        get() = this.phone
-        set(value) { this.phone = value }
-
     var Email: String
         get() = this.email
         set(value) { this.email = value }
 
-    var Province: Province
-        get() = this.province
-        set(value) { this.province = value }
-
-    var State: String
-        get() = this.state
-        set(value) { this.state = value }
-
-    var District: String
-        get() = this.district
-        set(value) { this.district = value }
-
-    var Address: String
-        get() = this.address
-        set(value) { this.address = value }
+    var Password: String
+        get() = this.password
+        set(value) { this.password = value }
 
     fun FullName(): String = "$name $fLastName $sLastName"
 }

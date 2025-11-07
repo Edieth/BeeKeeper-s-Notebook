@@ -1,9 +1,15 @@
 <resources>
     <string name="app_name">BeeKeepers Notebook</string>
     <string name="ErrorMsgAdd">Error al agregar el dato</string>
-    <string name="ErrorMsgUpdate">Error al modificarlo</string>
+    <string name="ErrorMsgUpdate">Error al actualizar el dato</string>
     <string name="ErrorMsgRemove">Error al eliminar el dato</string>
     <string name="ErrorMsgGetAll">Error al obtener la lista de datos.</string>
     <string name="ErrorMsgGetById">Error al obtener el dato especifico</string>
     <string name="MsgDataNotFound">El dato no fue encontrado</string>
+    <string name="TextEmail">Correo electrónico</string>
+    <string name="TextPassword">Contraseña</string>
+    <string name="btnTextLogin">Iniciar sesión</string>
+    <string name="TextForgot">¿Olvidaste la contraseña?</string>
+    <string name="TextCreateAccount">Crear cuenta</string>
+
 </resources>

@@ -1,12 +1,30 @@
 package cr.ac.utn.beekeepersnotebook
 
+import Controller.BeehiveController
+import Controller.QueenController
+import Controller.ZoneController
+import Controller.InventoryItemController
+import Controller.HarvestRecordController
+import Data.MemoryDataManager
+import cr.ac.utn.beekeepersnotebook.R
+import Data.IDataManager
+
+
 import android.os.Bundle
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 
+
 class MainActivity : AppCompatActivity() {
+    val db = MemoryDataManager()
+
+    val zoneController = ZoneController(db)
+    val beehiveController = BeehiveController(db)
+    val queenController = QueenController(db)
+    val inventoryController = InventoryItemController(db)
+    val harvestController = HarvestRecordController(db)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
