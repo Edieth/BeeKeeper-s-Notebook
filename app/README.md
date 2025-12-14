@@ -50,7 +50,7 @@ The code is organized into the following main packages:
 # 🌐 Beekeepers Notebook API
 
 RESTful API built with **Node.js, Express, and Firebase Firestore** for beekeeping management.
-link http://IP_DE_TU_PC_EN_LA_RED:3001/
+
 ### 👤 Users
 Application user management.
 
