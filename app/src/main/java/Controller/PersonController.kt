@@ -65,6 +65,11 @@ class PersonController {
             onResult(list)
         }
     }
+    fun getAll(onResult: (List<Person>) -> Unit) {
+        dataManager.getAll { list ->
+            onResult(list)
+        }
+    }
 
     fun getByFullName(fullname: String, onResult: (Person?) -> Unit) {
         try {

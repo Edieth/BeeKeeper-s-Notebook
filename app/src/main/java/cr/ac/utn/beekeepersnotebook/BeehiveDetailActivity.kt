@@ -78,7 +78,11 @@ class BeehiveDetailActivity : AppCompatActivity() {
 
                 tvName.text = hive.Name
                 tvBoxType.text = "Caja: ${hive.BoxType}"
+<<<<<<< HEAD
 
+=======
+                
+>>>>>>> 682fe6a0f13c6d4e086e436f81a979a8b3ffe72b
                 loadQueensForSpinner()
             }
 
@@ -145,7 +149,11 @@ class BeehiveDetailActivity : AppCompatActivity() {
                 availableQueens[selectedPos - 1]
             else
                 null
+<<<<<<< HEAD
 
+=======
+        
+>>>>>>> 682fe6a0f13c6d4e086e436f81a979a8b3ffe72b
         hive.QueenID = selectedQueen?.ID ?: ""
 
         beehiveController.updateBeehive(hive) { ok, msg ->
@@ -157,7 +165,11 @@ class BeehiveDetailActivity : AppCompatActivity() {
                 ).show()
                 return@updateBeehive
             }
+<<<<<<< HEAD
 
+=======
+            
+>>>>>>> 682fe6a0f13c6d4e086e436f81a979a8b3ffe72b
             if (!previousQueenId.isNullOrEmpty() &&
                 previousQueenId != selectedQueen?.ID
             ) {
@@ -168,7 +180,11 @@ class BeehiveDetailActivity : AppCompatActivity() {
                     }
                 }
             }
+<<<<<<< HEAD
 
+=======
+            
+>>>>>>> 682fe6a0f13c6d4e086e436f81a979a8b3ffe72b
             selectedQueen?.let { q ->
                 q.HiveID = hive.ID
                 queenController.updateQueen(q) { _, _ -> }
