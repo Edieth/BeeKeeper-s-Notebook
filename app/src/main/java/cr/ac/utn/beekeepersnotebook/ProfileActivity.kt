@@ -151,7 +151,7 @@ class ProfileActivity : AppCompatActivity() {
         person.Email = newEmail
         person.PhonePerson = newPhone
         person.photoBase64 = base64Photo
-        person.Photo = selectedBitmap   // solo en memoria
+        person.Photo = selectedBitmap
 
         db.collection("person")
             .document(user.uid)
@@ -180,7 +180,6 @@ class ProfileActivity : AppCompatActivity() {
             return
         }
 
-        // IMPORTANTE: updateEmail a veces requiere re-autenticación reciente
         user.updateEmail(newEmail)
             .addOnSuccessListener {
                 user.sendEmailVerification()

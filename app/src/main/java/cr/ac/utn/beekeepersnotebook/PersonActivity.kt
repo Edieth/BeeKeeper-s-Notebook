@@ -12,8 +12,6 @@ import android.provider.MediaStore
 import android.view.Menu
 import android.view.MenuInflater
 import android.view.MenuItem
-import android.view.View
-import android.widget.DatePicker
 import android.widget.EditText
 import android.widget.ImageButton
 import android.widget.ImageView
@@ -24,15 +22,12 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
-import java.time.LocalDate
-import java.util.Calendar
 import Util.Util
 import android.graphics.ImageDecoder
 
 
 class PersonActivity : AppCompatActivity() {
 
-    // Campos de la pantalla
     private lateinit var txtId: EditText
     private lateinit var txtName: EditText
     private lateinit var txtFLastName: EditText
@@ -41,16 +36,11 @@ class PersonActivity : AppCompatActivity() {
     private lateinit var txtPhone: EditText
     private lateinit var imgPhoto: ImageView
 
-    // Controladores y estado
     private lateinit var personController: PersonController
     private lateinit var menuitemDelete: MenuItem
     private var isEditMode: Boolean = false
     private var currentPerson: Person? = null
     private var selectedPhotoBitmap: Bitmap? = null
-
-    // =========================
-    // ActivityResult para cámara y galería
-    // =========================
 
     private val cameraPreviewLauncher =
         registerForActivityResult(ActivityResultContracts.TakePicturePreview()) { bitmap: Bitmap? ->
@@ -63,13 +53,22 @@ class PersonActivity : AppCompatActivity() {
     private val selectImageLauncher =
         registerForActivityResult(ActivityResultContracts.GetContent()) { uri ->
             if (uri != null) {
-                val bmp = MediaStore.Images.Media.getBitmap(this.contentResolver, uri)
-                selectedPhotoBitmap = bmp
-                imgPhoto.setImageBitmap(bmp)
+                val bmp: Bitmap? = if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.P) {
+                    val source = ImageDecoder.createSource(this.contentResolver, uri)
+                    ImageDecoder.decodeBitmap(source)
+                } else {
+                    @Suppress("DEPRECATION")
+                    MediaStore.Images.Media.getBitmap(this.contentResolver, uri)
+                }
+
+                if (bmp != null) {
+                    selectedPhotoBitmap = bmp
+                    imgPhoto.setImageBitmap(bmp)
+                } else {
+                    Toast.makeText(this, "Error al cargar la imagen", Toast.LENGTH_SHORT).show()
+                }
             }
         }
-
-
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)

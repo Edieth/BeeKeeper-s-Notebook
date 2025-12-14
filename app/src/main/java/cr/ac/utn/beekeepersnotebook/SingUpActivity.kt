@@ -134,7 +134,6 @@ class SingUpActivity : AppCompatActivity() {
                     photo = selectedPhotoBitmap,
                     photoBase64 = photoBase64
                 ).apply {
-                    // solo por claridad: Photo es Bitmap (no se guarda)
                     this.Photo = selectedPhotoBitmap
                 }
 

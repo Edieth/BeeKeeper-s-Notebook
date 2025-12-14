@@ -1,14 +1,19 @@
 package Controller
 
-import Data.RestHarvestDataManager
+import Data.FirebaseHarvestDataManager
+import cr.ac.utn.beekeepersnotebook.R
+import Data.IDataManager
 import Entity.HarvestRecord
 import android.content.Context
-import cr.ac.utn.beekeepersnotebook.R
 
-class HarvestController(private val context: Context, personId: String) {
 
-    // Inicializamos el nuevo DataManager REST pasándole el usuario
-    private val dataManager = RestHarvestDataManager(personId)
+class HarvestController {
+    private var dataManager: IDataManager<HarvestRecord> = FirebaseHarvestDataManager()
+    private var context: Context
+
+    constructor(context: Context){
+        this.context=context
+    }
 
     fun addHarvest(h: HarvestRecord, onResult: (Boolean, String?) -> Unit) {
         dataManager.add(h) { ok, error ->
@@ -31,13 +36,19 @@ class HarvestController(private val context: Context, personId: String) {
         }
     }
 
-    // CORRECCIÓN CLAVE: Usamos getByPerson en lugar de getAll
-    // Esto es lo que HarvestActivity está buscando y no encontraba
-    fun getByPerson(onResult: (List<HarvestRecord>) -> Unit) {
-        dataManager.getByPerson(onResult)
+    fun getAll(onResult: (List<HarvestRecord>) -> Unit) {
+        dataManager.getAll { list -> onResult(list) }
     }
 
     fun getById(id: String, onResult: (HarvestRecord?) -> Unit) {
-        dataManager.getById(id, onResult)
+        try {
+            return dataManager.getById(id, onResult)
+        } catch (e: Exception) {
+            throw Exception(context.getString(R.string.ErrorMsgGetById))
+        }
     }
+
 }
+
+
+

@@ -14,7 +14,6 @@ class Person {
     private var password: String = ""
     private var phonePerson: String = ""
 
-    // Bitmap solo en memoria
     @get:Exclude
     @set:Exclude
     var Photo: Bitmap? = null

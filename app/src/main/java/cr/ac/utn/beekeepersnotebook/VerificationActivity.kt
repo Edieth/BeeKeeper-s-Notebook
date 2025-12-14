@@ -23,7 +23,6 @@ class VerificationActivity : AppCompatActivity() {
         val btnAlreadyVerified: Button = findViewById(R.id.btnAlreadyVerified)
         val btnResendEmail: Button = findViewById(R.id.btnResendEmail)
 
-        // Botón: "Ya verifiqué mi correo"
         btnAlreadyVerified.setOnClickListener {
             val user = auth.currentUser
             if (user == null) {
@@ -31,12 +30,10 @@ class VerificationActivity : AppCompatActivity() {
                 return@setOnClickListener
             }
 
-            // Muy importante: recargar datos del servidor
             user.reload().addOnCompleteListener { task ->
                 if (task.isSuccessful) {
                     if (user.isEmailVerified) {
                         Toast.makeText(this, "Correo verificado correctamente.", Toast.LENGTH_SHORT).show()
-                        // Ir a la pantalla principal de tu app
                         startActivity(Intent(this, MainActivity::class.java))
                         finish()
                     } else {
@@ -56,7 +53,6 @@ class VerificationActivity : AppCompatActivity() {
             }
         }
 
-        // Botón: "Reenviar correo"
         btnResendEmail.setOnClickListener {
             val user = auth.currentUser
             if (user == null) {

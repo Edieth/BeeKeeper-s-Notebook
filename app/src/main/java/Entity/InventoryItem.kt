@@ -4,10 +4,8 @@ class InventoryItem() {
     private var id: String = ""
     private var personId: String = ""
 
-    // Nombre del material
     private var nameInventoryItem: String = ""
 
-    // Cantidad total
     private var inventoryItemTotalQuantity: Int = 0
     private var inventoryDataType: String = ""
 
@@ -25,7 +23,6 @@ class InventoryItem() {
         this.inventoryDataType = inventoryDataType
     }
 
-    // ---- PROPIEDADES PÚBLICAS TIPO "C# style" ----
 
     var ID: String
         get() = id

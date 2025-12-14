@@ -37,7 +37,6 @@ class ZoneMenuActivity : AppCompatActivity() {
 
         tvZoneName.text = zoneName
 
-        // Botón COLMENAS → lista de colmenas de esa zona
         btnBeehives.setOnClickListener {
             val intent = Intent(this, BeehiveActivity::class.java)
             intent.putExtra("ZONE_ID", zoneId)
@@ -45,14 +44,14 @@ class ZoneMenuActivity : AppCompatActivity() {
             startActivity(intent)
         }
 
-        // Botón REINAS → pantalla de reinas, filtrando por zona (o luego por colmena)
+
         btnQueens.setOnClickListener {
             val intent = Intent(this, QueenActivity::class.java)
             intent.putExtra("ZONE_ID", zoneId)
             startActivity(intent)
         }
 
-        // Botón COSECHAS
+
         btnHarvests.setOnClickListener {
             val intent = Intent(this, HarvestActivity::class.java)
             intent.putExtra("ZONE_ID", zoneId)

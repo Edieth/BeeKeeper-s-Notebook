@@ -38,7 +38,7 @@ class MainActivity : AppCompatActivity() {
 
         btnProfile.setOnClickListener {
             val u = FirebaseAuth.getInstance().currentUser
-
+            
 
             startActivity(Intent(this, ProfileActivity::class.java))
         }
@@ -64,7 +64,6 @@ class MainActivity : AppCompatActivity() {
             finish()
             return
         }
-        // Si quieres obligar verificación, recarga primero:
         user.reload().addOnCompleteListener {
             if (!user.isEmailVerified) {
                 startActivity(Intent(this, VerificationActivity::class.java))

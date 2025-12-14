@@ -10,7 +10,7 @@ class Queen {
 
     private var id: String = ""
     private var hiveId: String = ""
-    private var personId: String = ""     // ya estaba, ahora lo exponemos
+    private var personId: String = ""
     private var zoneID: String = ""
     private var typeInternal: String = ""
     var entryDateStr: String = ""

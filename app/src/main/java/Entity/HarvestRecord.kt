@@ -72,7 +72,6 @@ class HarvestRecord() {
             DateHarvest = value
         }
 
-    // ------------------ Fecha ------------------
     fun FullInfoHarvest(): String =
         "Cosecha $DateHarvestHoney - Colmena $BeehiveID - " +
                 "Marcos $HoneyFramesHarvest - Kg bruto $HoneyAmountKgHarvest - Kg neto $HoneyAmountKgNetaHarvest"
