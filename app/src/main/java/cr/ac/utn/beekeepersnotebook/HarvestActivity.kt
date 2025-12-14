@@ -18,6 +18,7 @@ import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.google.firebase.auth.FirebaseAuth
 
 class HarvestActivity : AppCompatActivity() {
 
@@ -34,6 +35,9 @@ class HarvestActivity : AppCompatActivity() {
     private var zoneId: String = ""
     private var zoneName: String = ""
 
+    // Variable para el usuario
+    private var personId: String = ""
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
@@ -45,6 +49,14 @@ class HarvestActivity : AppCompatActivity() {
             insets
         }
 
+        // 1. Obtener usuario logueado
+        personId = FirebaseAuth.getInstance().currentUser?.uid ?: ""
+        if (personId.isBlank()) {
+            Toast.makeText(this, "Usuario no identificado", Toast.LENGTH_SHORT).show()
+            finish()
+            return
+        }
+
         // Datos recibidos
         zoneId = intent.getStringExtra("ZONE_ID") ?: ""
         zoneName = intent.getStringExtra("ZONE_NAME") ?: ""
@@ -52,8 +64,11 @@ class HarvestActivity : AppCompatActivity() {
 
         title = "Cosechas - $zoneName"
 
-        controller = HarvestController(this)
-        beehiveController = BeehiveController(this)
+        // 2. CORRECCIÓN: Pasamos personId a los controladores
+        // Nota: Si HarvestController te marca error aquí, es porque AÚN no lo hemos modificado.
+        // Lo arreglaremos en el siguiente paso. Por ahora déjalo así.
+        controller = HarvestController(this, personId)
+        beehiveController = BeehiveController(this, personId)
 
         recycler = findViewById(R.id.recyclerHarvests)
         btnHarvest = findViewById(R.id.btnAddHarvest)
@@ -76,7 +91,9 @@ class HarvestActivity : AppCompatActivity() {
     // Cargar cosechas de la zona
     // =========================
     private fun loadHarvests() {
-        controller.getAll { list ->
+        // CORRECCIÓN: Usamos getByPerson en lugar de getAll
+        // (Asumiendo que actualizaremos HarvestController igual que los demás)
+        controller.getByPerson { list ->
             harvests.clear()
 
             val filtered = if (beehiveId.isNotEmpty()) {
@@ -98,8 +115,10 @@ class HarvestActivity : AppCompatActivity() {
         }
 
     }
+
     private fun loadBeehivesForZone(onReady: () -> Unit) {
-        beehiveController.getAll { list ->
+        // CORRECCIÓN: Usamos getByPerson (BeehiveController ya fue corregido, así que esto funcionará)
+        beehiveController.getByPerson { list ->
             beehives.clear()
 
             beehives.addAll(
@@ -111,6 +130,7 @@ class HarvestActivity : AppCompatActivity() {
             }
         }
     }
+
     // =========================
     // Agregar cosecha
     // =========================
@@ -182,6 +202,7 @@ class HarvestActivity : AppCompatActivity() {
                     HoneyAmountKgNetaHarvest = kgNeta
                 }
 
+                // Controller ya tiene el personId en el constructor
                 controller.addHarvest(harvest) { ok, msg ->
                     if (ok) {
                         Toast.makeText(this, "Cosecha guardada", Toast.LENGTH_SHORT).show()
@@ -215,7 +236,6 @@ class HarvestActivity : AppCompatActivity() {
         txtKg.setText(h.HoneyAmountKgHarvest.toString())
         txtKgNeta.setText(h.HoneyAmountKgNetaHarvest.toString())
 
-        // Cargamos colmenas para el spinner y preseleccionamos la del registro
         loadBeehivesForZone {
             val labels = mutableListOf<String>()
             labels.add("Seleccione una colmena")
@@ -263,6 +283,7 @@ class HarvestActivity : AppCompatActivity() {
                 h.HoneyAmountKgHarvest = kgStr.toDoubleOrNull() ?: 0.0
                 h.HoneyAmountKgNetaHarvest = kgNetaStr.toDoubleOrNull() ?: 0.0
 
+                // Controller ya tiene el personId
                 controller.updateHarvest(h) { ok, msg ->
                     if (ok) {
                         Toast.makeText(this, "Cosecha actualizada", Toast.LENGTH_SHORT).show()
@@ -304,5 +325,4 @@ class HarvestActivity : AppCompatActivity() {
             .setNegativeButton("Cancelar", null)
             .show()
     }
-    }
-
+}

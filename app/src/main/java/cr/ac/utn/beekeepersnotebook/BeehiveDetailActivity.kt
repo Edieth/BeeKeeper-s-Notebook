@@ -5,7 +5,6 @@ import Controller.HarvestController
 import Controller.QueenController
 import Entity.Beehive
 import Entity.Queen
-import android.content.Intent
 import android.os.Bundle
 import android.widget.ArrayAdapter
 import android.widget.Button
@@ -16,6 +15,7 @@ import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
+import com.google.firebase.auth.FirebaseAuth
 
 class BeehiveDetailActivity : AppCompatActivity() {
     private lateinit var tvName: TextView
@@ -26,13 +26,18 @@ class BeehiveDetailActivity : AppCompatActivity() {
     private lateinit var tvTotalHarvest: TextView
     private lateinit var spQueen: Spinner
     private lateinit var btnSaveChanges: Button
+
     private lateinit var beehiveController: BeehiveController
     private lateinit var queenController: QueenController
     private lateinit var harvestController: HarvestController
+
     private var hiveId: String = ""
     private var currentHive: Beehive? = null
     private var oldQueenId: String? = null
     private var availableQueens: List<Queen> = emptyList()
+
+    // Variable para el usuario
+    private var personId: String = ""
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -42,18 +47,28 @@ class BeehiveDetailActivity : AppCompatActivity() {
             val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom)
             insets
-
         }
 
-        beehiveController = BeehiveController(this)
-        queenController = QueenController(this)
-        harvestController = HarvestController(this)
+        // 1. Obtenemos el ID del usuario
+        personId = FirebaseAuth.getInstance().currentUser?.uid ?: ""
+        if (personId.isBlank()) {
+            Toast.makeText(this, "Usuario no identificado", Toast.LENGTH_SHORT).show()
+            finish()
+            return
+        }
+
+        // 2. Inicializamos Controllers pasando el personId a TODOS
+        beehiveController = BeehiveController(this, personId)
+        queenController = QueenController(this, personId)
+        // CORRECCIÓN: Ahora HarvestController también recibe personId
+        harvestController = HarvestController(this, personId)
 
         tvName = findViewById(R.id.tvHiveName)
         tvBoxType = findViewById(R.id.tvHiveBoxType)
         tvTotalHarvest = findViewById(R.id.tvTotalHarvest)
         spQueen = findViewById(R.id.spQueenDetail)
         btnSaveChanges = findViewById(R.id.btnSaveQueenChanges)
+
         hiveId = intent.getStringExtra("HIVE_ID") ?: ""
 
         if (hiveId.isEmpty()) {
@@ -61,12 +76,15 @@ class BeehiveDetailActivity : AppCompatActivity() {
             finish()
             return
         }
+
         loadHiveData()
+        loadTotalHarvest()
 
         btnSaveChanges.setOnClickListener {
             saveQueenChanges()
         }
     }
+
     private fun loadHiveData() {
         beehiveController.getById(hiveId) { hive ->
             if (hive == null) {
@@ -82,15 +100,14 @@ class BeehiveDetailActivity : AppCompatActivity() {
                 // Después de tener la colmena, cargamos las reinas para el spinner
                 loadQueensForSpinner()
             }
-
-
         }
     }
 
 
     private fun loadQueensForSpinner() {
-        queenController.getAll { list ->
+        queenController.getByPerson { list ->
 
+            // Filtramos las disponibles + la que ya tiene asignada esta colmena
             availableQueens = list.filter { q ->
                 q.HiveID.isEmpty() || q.HiveID == hiveId
             }
@@ -118,11 +135,13 @@ class BeehiveDetailActivity : AppCompatActivity() {
             }
         }
     }
+
     private fun loadTotalHarvest() {
         if (hiveId.isEmpty()) return
 
-        harvestController.getAll { list ->
-            // puedes sumar bruto o neto, yo uso neto:
+        // CORRECCIÓN: Cambiamos getAll por getByPerson
+        harvestController.getByPerson { list ->
+            // sumamos lo neto de esta colmena
             val totalNeto = list
                 .filter { it.BeehiveID == hiveId }
                 .sumOf { it.HoneyAmountKgNetaHarvest }
@@ -132,6 +151,7 @@ class BeehiveDetailActivity : AppCompatActivity() {
             }
         }
     }
+
     private fun saveQueenChanges() {
         val hive = currentHive
         if (hive == null) {
@@ -151,6 +171,7 @@ class BeehiveDetailActivity : AppCompatActivity() {
         // Actualizamos la colmena con la nueva reina
         hive.QueenID = selectedQueen?.ID ?: ""
 
+        // Controller ya tiene personId
         beehiveController.updateBeehive(hive) { ok, msg ->
             if (!ok) {
                 Toast.makeText(
@@ -173,7 +194,7 @@ class BeehiveDetailActivity : AppCompatActivity() {
                 }
             }
 
-            // 2) Asignar la nueva reina (ponerle HiveID = id de esta colmena)
+            // 2) Asignar la nueva reina
             selectedQueen?.let { q ->
                 q.HiveID = hive.ID
                 queenController.updateQueen(q) { _, _ -> }
