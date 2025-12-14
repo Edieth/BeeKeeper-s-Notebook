@@ -64,7 +64,6 @@ class MainActivity : AppCompatActivity() {
             finish()
             return
         }
-        // Si quieres obligar verificación, recarga primero:
         user.reload().addOnCompleteListener {
             if (!user.isEmailVerified) {
                 startActivity(Intent(this, VerificationActivity::class.java))

@@ -1,7 +1,8 @@
 package cr.ac.utn.beekeepersnotebook
-import Controller.QueenController
+
 import Adapter.BeehiveAdapter
 import Controller.BeehiveController
+import Controller.QueenController
 import Entity.Beehive
 import Entity.Queen
 import android.content.Intent
@@ -18,20 +19,24 @@ import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-
+import com.google.firebase.auth.FirebaseAuth
 
 class BeehiveActivity : AppCompatActivity() {
+
     private lateinit var recycler: RecyclerView
     private lateinit var btnAddBeehive: Button
     private lateinit var adapter: BeehiveAdapter
+
     private lateinit var controller: BeehiveController
+    private lateinit var queenController: QueenController
+
+    private var personId: String = ""
 
     private val hives = mutableListOf<Beehive>()
     private var zoneId: String = ""
     private var zoneName: String = ""
-    private lateinit var queenController: QueenController
-    private var availableQueens: List<Queen> = emptyList()
 
+    private var availableQueens: List<Queen> = emptyList()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -44,14 +49,21 @@ class BeehiveActivity : AppCompatActivity() {
             insets
         }
 
-        // ID y nombre de la zona que viene desde ZoneActivity
+        // ✅ UID logueado
+        personId = FirebaseAuth.getInstance().currentUser?.uid ?: ""
+        if (personId.isBlank()) {
+            Toast.makeText(this, "No hay usuario logueado", Toast.LENGTH_LONG).show()
+            finish()
+            return
+        }
+
         zoneId = intent.getStringExtra("ZONE_ID") ?: ""
         zoneName = intent.getStringExtra("ZONE_NAME") ?: ""
-
         title = "Colmenas - $zoneName"
 
-        controller = BeehiveController(this)
-        queenController = QueenController(this)
+        // ✅ Controllers con personId por constructor (Correcto)
+        controller = BeehiveController(this, personId)
+        queenController = QueenController(this, personId)
 
         recycler = findViewById(R.id.recyclerBeehives)
         btnAddBeehive = findViewById(R.id.btnAddBeehive)
@@ -70,33 +82,23 @@ class BeehiveActivity : AppCompatActivity() {
         loadHives()
     }
 
-    // =========================
-    // Cargar colmenas de la zona
-    // =========================
     private fun loadHives() {
-        controller.getAll { list ->
+        // CORRECCIÓN: Cambiamos .getAll por .getByPerson
+        controller.getByPerson { list ->
             hives.clear()
-            // Filtramos por ZoneID, no por ID
+            // Filtramos por zona localmente
             hives.addAll(list.filter { it.ZoneID == zoneId })
             adapter.notifyDataSetChanged()
-            Toast.makeText(this, "Colmena cargado: ${hives.size} items", Toast.LENGTH_SHORT).show()
-
+            Toast.makeText(this, "Colmenas cargadas: ${hives.size}", Toast.LENGTH_SHORT).show()
         }
     }
 
-    // =========================
-    // Abrir detalle
-    // =========================
     private fun openDetails(hive: Beehive) {
         val intent = Intent(this, BeehiveDetailActivity::class.java)
         intent.putExtra("HIVE_ID", hive.ID)
         startActivity(intent)
     }
 
-
-    // =========================
-    // Menú Editar / Eliminar
-    // =========================
     private fun showHiveOptions(hive: Beehive) {
         val options = arrayOf("Editar", "Eliminar")
         AlertDialog.Builder(this)
@@ -110,24 +112,18 @@ class BeehiveActivity : AppCompatActivity() {
             .show()
     }
 
-    // =========================
-    // Crear nueva colmena
-    // =========================
     private fun addHiveDialog() {
         val view = layoutInflater.inflate(R.layout.dialog_beehive, null)
         val txtName = view.findViewById<EditText>(R.id.txtBeehiveName)
         val txtBoxType = view.findViewById<EditText>(R.id.txtBeehiveBoxType)
         val spQueen = view.findViewById<Spinner>(R.id.spQueen)
 
-        // 1. Cargar reinas disponibles (ninguna colmena asignada)
         loadAvailableQueensForHive(null) { queens ->
             availableQueens = queens
 
             val labels = mutableListOf<String>()
             labels.add("Sin reina asignada")
-            labels.addAll(
-                queens.map { q -> "${q.Type} - ${q.getEntryDateAsString()}" }
-            )
+            labels.addAll(queens.map { q -> "${q.Type} - ${q.getEntryDateAsString()}" })
 
             val spinAdapter = ArrayAdapter(
                 this,
@@ -137,7 +133,6 @@ class BeehiveActivity : AppCompatActivity() {
             spinAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
             spQueen.adapter = spinAdapter
         }
-
 
         AlertDialog.Builder(this)
             .setTitle("Nueva colmena")
@@ -150,12 +145,11 @@ class BeehiveActivity : AppCompatActivity() {
                     Toast.makeText(this, "Ingrese un nombre", Toast.LENGTH_SHORT).show()
                     return@setPositiveButton
                 }
+
                 val selectedPos = spQueen.selectedItemPosition
                 val selectedQueen: Queen? =
-                    if (selectedPos > 0 && availableQueens.isNotEmpty())
-                        availableQueens[selectedPos - 1]
-                    else
-                        null
+                    if (selectedPos > 0 && availableQueens.isNotEmpty()) availableQueens[selectedPos - 1]
+                    else null
 
                 val hive = Beehive().apply {
                     Name = name
@@ -164,8 +158,10 @@ class BeehiveActivity : AppCompatActivity() {
                     QueenID = selectedQueen?.ID ?: ""
                 }
 
+                // Controller ya tiene personId, solo pasamos hive
                 controller.addBeehive(hive) { ok, msg ->
-                    if (ok) {//marcar la reina como asignada, para que ya NO salga en nuevas colmenas
+                    if (ok) {
+                        // Marcar reina como asignada (si se eligió)
                         selectedQueen?.let { q ->
                             q.HiveID = hive.ID
                             queenController.updateQueen(q) { _, _ -> }
@@ -182,9 +178,6 @@ class BeehiveActivity : AppCompatActivity() {
             .show()
     }
 
-    // =========================
-    // Editar colmena
-    // =========================
     private fun editHiveDialog(hive: Beehive) {
         val view = layoutInflater.inflate(R.layout.dialog_beehive, null)
         val txtName = view.findViewById<EditText>(R.id.txtBeehiveName)
@@ -193,6 +186,7 @@ class BeehiveActivity : AppCompatActivity() {
 
         txtName.setText(hive.Name)
         txtBoxType.setText(hive.BoxType)
+
         val oldQueenId = hive.QueenID
 
         loadAvailableQueensForHive(hive.ID) { queens ->
@@ -200,9 +194,7 @@ class BeehiveActivity : AppCompatActivity() {
 
             val labels = mutableListOf<String>()
             labels.add("Sin reina asignada")
-            labels.addAll(
-                queens.map { q -> "${q.Type} - ${q.getEntryDateAsString()}" }
-            )
+            labels.addAll(queens.map { q -> "${q.Type} - ${q.getEntryDateAsString()}" })
 
             val spinAdapter = ArrayAdapter(
                 this,
@@ -212,12 +204,9 @@ class BeehiveActivity : AppCompatActivity() {
             spinAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
             spQueen.adapter = spinAdapter
 
-            // Preseleccionar la reina actual (si tiene)
             if (!oldQueenId.isNullOrEmpty()) {
                 val idx = queens.indexOfFirst { it.ID == oldQueenId }
-                if (idx >= 0) {
-                    spQueen.setSelection(idx + 1) // +1 por "Sin reina asignada"
-                }
+                if (idx >= 0) spQueen.setSelection(idx + 1)
             }
         }
 
@@ -232,28 +221,29 @@ class BeehiveActivity : AppCompatActivity() {
                     Toast.makeText(this, "Ingrese un nombre", Toast.LENGTH_SHORT).show()
                     return@setPositiveButton
                 }
+
                 val selectedPos = spQueen.selectedItemPosition
                 val selectedQueen: Queen? =
-                    if (selectedPos > 0 && availableQueens.isNotEmpty())
-                        availableQueens[selectedPos - 1]
-                    else
-                        null
+                    if (selectedPos > 0 && availableQueens.isNotEmpty()) availableQueens[selectedPos - 1]
+                    else null
+
                 hive.Name = name
                 hive.BoxType = boxType
                 hive.QueenID = selectedQueen?.ID ?: ""
 
                 controller.updateBeehive(hive) { ok, msg ->
-                    if (ok) {if (!oldQueenId.isNullOrEmpty() &&
-                        oldQueenId != selectedQueen?.ID
-                    ) {
-                        queenController.getById(oldQueenId) { q ->
-                            q?.let {
-                                it.HiveID = ""
-                                queenController.updateQueen(it) { _, _ -> }
+                    if (ok) {
+                        // 1) Des-asignar reina anterior si cambió
+                        if (!oldQueenId.isNullOrEmpty() && oldQueenId != selectedQueen?.ID) {
+                            queenController.getById(oldQueenId) { qOld ->
+                                qOld?.let {
+                                    it.HiveID = ""
+                                    queenController.updateQueen(it) { _, _ -> }
+                                }
                             }
                         }
-                    }
-                        // 2) Marcar la nueva reina como asignada
+
+                        // 2) Asignar nueva reina
                         selectedQueen?.let { q ->
                             q.HiveID = hive.ID
                             queenController.updateQueen(q) { _, _ -> }
@@ -270,9 +260,6 @@ class BeehiveActivity : AppCompatActivity() {
             .show()
     }
 
-    // =========================
-    // Eliminar colmena
-    // =========================
     private fun deleteHive(hive: Beehive) {
         AlertDialog.Builder(this)
             .setTitle("Eliminar colmena")
@@ -290,19 +277,18 @@ class BeehiveActivity : AppCompatActivity() {
             .setNegativeButton("Cancelar", null)
             .show()
     }
+
     private fun loadAvailableQueensForHive(
         currentHiveId: String?,
         onResult: (List<Queen>) -> Unit
     ) {
-        queenController.getAll { list ->
-            // aquí podrías filtrar por zona si tu Queen tiene ZoneID
+        // Traemos reinas del usuario y filtramos por zona y disponibilidad
+        queenController.getByPerson { list ->
             val filtered = list.filter { q ->
-                q.HiveID.isNullOrEmpty() || q.HiveID == (currentHiveId ?: "")
+                q.ZoneID == zoneId &&
+                        (q.HiveID.isEmpty() || q.HiveID == (currentHiveId ?: ""))
             }
             onResult(filtered)
         }
     }
-
-
-
 }

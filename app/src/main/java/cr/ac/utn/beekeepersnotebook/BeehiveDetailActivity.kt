@@ -78,8 +78,7 @@ class BeehiveDetailActivity : AppCompatActivity() {
 
                 tvName.text = hive.Name
                 tvBoxType.text = "Caja: ${hive.BoxType}"
-
-                // Después de tener la colmena, cargamos las reinas para el spinner
+                
                 loadQueensForSpinner()
             }
 
@@ -122,7 +121,6 @@ class BeehiveDetailActivity : AppCompatActivity() {
         if (hiveId.isEmpty()) return
 
         harvestController.getAll { list ->
-            // puedes sumar bruto o neto, yo uso neto:
             val totalNeto = list
                 .filter { it.BeehiveID == hiveId }
                 .sumOf { it.HoneyAmountKgNetaHarvest }
@@ -147,8 +145,7 @@ class BeehiveDetailActivity : AppCompatActivity() {
                 availableQueens[selectedPos - 1]
             else
                 null
-
-        // Actualizamos la colmena con la nueva reina
+        
         hive.QueenID = selectedQueen?.ID ?: ""
 
         beehiveController.updateBeehive(hive) { ok, msg ->
@@ -160,8 +157,7 @@ class BeehiveDetailActivity : AppCompatActivity() {
                 ).show()
                 return@updateBeehive
             }
-
-            // 1) Liberar la reina anterior si cambió
+            
             if (!previousQueenId.isNullOrEmpty() &&
                 previousQueenId != selectedQueen?.ID
             ) {
@@ -172,8 +168,7 @@ class BeehiveDetailActivity : AppCompatActivity() {
                     }
                 }
             }
-
-            // 2) Asignar la nueva reina (ponerle HiveID = id de esta colmena)
+            
             selectedQueen?.let { q ->
                 q.HiveID = hive.ID
                 queenController.updateQueen(q) { _, _ -> }

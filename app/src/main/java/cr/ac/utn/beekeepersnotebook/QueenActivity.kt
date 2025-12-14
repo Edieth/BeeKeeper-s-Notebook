@@ -2,21 +2,19 @@ package cr.ac.utn.beekeepersnotebook
 
 import Adapter.QueenAdapter
 import Controller.QueenController
+import Entity.Queen
 import android.os.Bundle
+import android.widget.Button
+import android.widget.EditText
+import android.widget.Toast
 import androidx.activity.enableEdgeToEdge
+import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.recyclerview.widget.LinearLayoutManager
-import Entity.Queen
-import android.widget.Button
-import android.widget.EditText
-import android.widget.Toast
-import androidx.appcompat.app.AlertDialog
 import androidx.recyclerview.widget.RecyclerView
-import java.time.LocalDate
-import java.time.format.DateTimeFormatter
-
+import com.google.firebase.auth.FirebaseAuth
 
 class QueenActivity : AppCompatActivity() {
 
@@ -27,7 +25,7 @@ class QueenActivity : AppCompatActivity() {
     private lateinit var controller: QueenController
     private var zoneId: String = ""
     private var zoneName: String = ""
-
+    private var personId: String = ""
     private val queens = mutableListOf<Queen>()
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -40,17 +38,21 @@ class QueenActivity : AppCompatActivity() {
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom)
             insets
         }
-        // ID y nombre de la zona que viene desde ZoneActivity
+
         zoneId = intent.getStringExtra("ZONE_ID") ?: ""
         zoneName = intent.getStringExtra("ZONE_NAME") ?: ""
 
-        title = "Colmenas - $zoneName"
 
-        // Si algún día se necesita saber desde qué colmena entré, podrías leer HIVE_ID aquí,
-        // pero para registrar reinas "globales" no lo necesitamos.
-        // val beehiveId = intent.getStringExtra("HIVE_ID") ?: ""
+        personId = FirebaseAuth.getInstance().currentUser?.uid ?: ""
 
-        controller = QueenController(this)
+        if (personId.isBlank()) {
+            Toast.makeText(this, "Error: No hay usuario logueado", Toast.LENGTH_SHORT).show()
+        }
+
+        title = "Reinas - $zoneName"
+
+        // ✅ Inicializamos el Controller pasando el personId UNA VEZ
+        controller = QueenController(this, personId)
 
         recycler = findViewById(R.id.recyclerQueens)
         btnAddQueen = findViewById(R.id.btnAddQueen)
@@ -70,24 +72,22 @@ class QueenActivity : AppCompatActivity() {
     }
 
     // =========================
-    // Cargar TODAS las reinas (o filtrar por usuario si querés)
+    // Cargar TODAS las reinas
     // =========================
     private fun loadQueens() {
-        controller.getAll { list ->
+        // CORRECCIÓN: Borramos 'personId' de aquí. El controller ya lo tiene.
+        controller.getByPerson { list ->
             queens.clear()
-
-            // Aquí podrías filtrar por usuario si tus reinas tienen PersonID o ZoneID.
-            // De momento las cargamos todas:
+            // Filtramos localmente por zona
             queens.addAll(list.filter { it.ZoneID == zoneId })
             adapter.notifyDataSetChanged()
-            Toast.makeText(this, "Reina cargado: ${queens.size} items", Toast.LENGTH_SHORT).show()
-
+            Toast.makeText(this, "Reinas cargadas: ${queens.size}", Toast.LENGTH_SHORT).show()
         }
     }
 
 
     // =========================
-    // Nueva reina (queda LIBRE: HiveID = "")
+    // Nueva reina
     // =========================
     private fun addQueenDialog() {
         val view = layoutInflater.inflate(R.layout.dialog_queen, null)
@@ -113,6 +113,7 @@ class QueenActivity : AppCompatActivity() {
                     setEntryDateFromString(date)
                 }
 
+                // CORRECCIÓN: Borramos 'personId' de aquí.
                 controller.addQueen(q) { ok, msg ->
                     if (ok) {
                         Toast.makeText(this, "Reina guardada", Toast.LENGTH_SHORT).show()
@@ -127,7 +128,7 @@ class QueenActivity : AppCompatActivity() {
     }
 
     // =========================
-    // Editar reina (solo tipo y fecha)
+    // Editar reina
     // =========================
     private fun editQueenDialog(queen: Queen) {
         val view = layoutInflater.inflate(R.layout.dialog_queen, null)
@@ -152,6 +153,7 @@ class QueenActivity : AppCompatActivity() {
                 queen.Type = type
                 queen.setEntryDateFromString(date)
 
+                // CORRECCIÓN: Borramos 'personId' de aquí.
                 controller.updateQueen(queen) { ok, msg ->
                     if (ok) {
                         Toast.makeText(this, "Reina actualizada", Toast.LENGTH_SHORT).show()
